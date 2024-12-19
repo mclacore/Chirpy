@@ -1,15 +1,25 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync/atomic"
 )
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
 }
+
+type chirp struct {
+	Body        string `json:"body"`
+	Error       string `json:"error"`
+	CleanedBody string `json:"cleaned_body"`
+}
+
+var reqBody chirp
 
 func main() {
 	port := "8080"
@@ -20,6 +30,7 @@ func main() {
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handler))
 	mux.Handle("/assets", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("GET /admin/metrics", apiCfg.hits)
+	mux.HandleFunc("POST /api/validate_chirp", validateChirpy)
 	mux.HandleFunc("POST /admin/reset", apiCfg.resetMetrics)
 	mux.HandleFunc("GET /api/healthz", healthZHeader)
 	server := &http.Server{
@@ -56,4 +67,49 @@ func (cfg *apiConfig) hits(w http.ResponseWriter, r *http.Request) {
   </body>
 </html>
 `, cfg.fileserverHits.Load())
+}
+
+func validateChirpy(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&reqBody)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
+		return
+	}
+
+	if len(reqBody.Body) > 140 {
+		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, reqBody)
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
+	res := chirp{Error: msg}
+	dat, _ := json.Marshal(res)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(dat)
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, paylod interface{}) {
+	res := chirp{CleanedBody: profaneToAsterisks(reqBody.Body)}
+	dat, _ := json.Marshal(res)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(dat)
+}
+
+func profaneToAsterisks(s string) string {
+	var cleanWords []string
+	words := strings.Split(s, " ")
+	for _, word := range words {
+		switch strings.ToLower(word) {
+		case "kerfuffle", "sharbert", "fornax":
+			word = "****"
+		}
+		cleanWords = append(cleanWords, word)
+	}
+	return strings.Join(cleanWords, " ")
 }
