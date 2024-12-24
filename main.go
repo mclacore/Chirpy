@@ -29,13 +29,16 @@ func main() {
 
 	mux := http.NewServeMux()
 	handler := http.StripPrefix("/app", http.FileServer(http.Dir(".")))
+
 	mux.Handle("/app/", apiCfg.MiddlewareMetricsInc(handler))
 	mux.Handle("/assets", http.FileServer(http.Dir(".")))
+
+	mux.HandleFunc("POST /api/chirps", api.PostChirp)
 	mux.HandleFunc("POST /api/users", apiCfg.CreateUser)
-	mux.HandleFunc("POST /api/validate_chirp", api.ValidateChirpy)
+	mux.HandleFunc("GET /api/healthz", api.HealthZHeader)
+
 	mux.HandleFunc("POST /admin/reset", apiCfg.Reset)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.Hits)
-	mux.HandleFunc("GET /api/healthz", api.HealthZHeader)
 	server := &http.Server{
 		Handler: mux,
 		Addr:    ":" + port,

@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 var reqBody Chirp
 
-func ValidateChirpy(w http.ResponseWriter, r *http.Request) {
+func PostChirp(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&reqBody)
 	if err != nil {
@@ -21,7 +23,9 @@ func ValidateChirpy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, reqBody)
+	reqBody.Id = uuid.New()
+	reqBody.CleanedBody = ProfaneToAsterisks(reqBody.Body)
+	RespondWithJSON(w, http.StatusCreated, reqBody)
 }
 
 func ProfaneToAsterisks(s string) string {

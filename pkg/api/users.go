@@ -5,21 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
-
-	"github.com/google/uuid"
 )
 
+var resBody User
+
 func (cfg *ApiConfig) CreateUser(w http.ResponseWriter, r *http.Request) {
-	type user struct {
-		Id        uuid.UUID `json:"id"`
-		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at"`
-		Email     string    `json:"email"`
-	}
-
-	var resBody user
-
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&resBody)
 	if err != nil {
