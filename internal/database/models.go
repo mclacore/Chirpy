@@ -11,8 +11,8 @@ import (
 )
 
 type User struct {
-	ID        uuid.NullUUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
-	Email     sql.NullString
+	ID        uuid.NullUUID `json:"id"`
+	CreatedAt sql.NullTime  `json:"created_at"`
+	UpdatedAt sql.NullTime  `json:"updated_at"`
+	Email     string        `json:"email"`
 }
