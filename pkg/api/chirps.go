@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 
+	"github.com/google/uuid"
 	"github.com/mclacore/Chirpy/internal/database"
 )
 
@@ -24,7 +24,7 @@ func (cfg *ApiConfig) PostChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirp.CleanedBody = ProfaneToAsterisks(chirp.Body)
+	chirp.CleanedBody = profaneToAsterisks(chirp.Body)
 
 	chirpParams := database.PostChirpParams{
 		Body:   chirp.Body,
@@ -40,15 +40,31 @@ func (cfg *ApiConfig) PostChirp(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusCreated, postChirp)
 }
 
-func ProfaneToAsterisks(s string) string {
-	var cleanWords []string
-	words := strings.Split(s, " ")
-	for _, word := range words {
-		switch strings.ToLower(word) {
-		case "kerfuffle", "sharbert", "fornax":
-			word = "****"
-		}
-		cleanWords = append(cleanWords, word)
+func (cfg *ApiConfig) GetChirps(w http.ResponseWriter, r *http.Request) {
+	getChirps, getErr := cfg.Database.GetChirps(r.Context())
+	if getErr != nil {
+		log.Println("Error fetching chirps:", getErr)
+		RespondWithError(w, http.StatusInternalServerError, "Could not fetch chirps")
+		return
 	}
-	return strings.Join(cleanWords, " ")
+
+	RespondWithJSON(w, http.StatusOK, getChirps)
+}
+
+func (cfg *ApiConfig) GetChirp(w http.ResponseWriter, r *http.Request) {
+	chirpId := r.PathValue("chirpID")
+	parsedUUID, parseErr := uuid.Parse(chirpId)
+	if parseErr != nil {
+		RespondWithError(w, http.StatusBadRequest, "Not a valid UUID")
+		return
+	}
+
+	getChirp, getErr := cfg.Database.GetChirp(r.Context(), parsedUUID)
+	if getErr != nil {
+		log.Println("Error fetching chirp:", getErr)
+		RespondWithError(w, http.StatusNotFound, "Chirp not found")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, getChirp)
 }
