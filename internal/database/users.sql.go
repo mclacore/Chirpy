@@ -8,6 +8,8 @@ package database
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -31,4 +33,13 @@ func (q *Queries) CreateUser(ctx context.Context, email sql.NullString) (User, e
 		&i.Email,
 	)
 	return i, err
+}
+
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.NullUUID) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
 }
