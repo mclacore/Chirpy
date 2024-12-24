@@ -13,8 +13,8 @@ func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	w.Write(dat)
 }
 
-func RespondWithJSON(w http.ResponseWriter, code int, payload string) {
-	res := Chirp{CleanedBody: ProfaneToAsterisks(payload)}
+func RespondWithJSON(w http.ResponseWriter, code int, payload Chirp) {
+	res := Chirp{CleanedBody: ProfaneToAsterisks(payload.Body)}
 	dat, _ := json.Marshal(res)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)

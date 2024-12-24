@@ -8,7 +8,7 @@ import (
 func (cfg *ApiConfig) Reset(w http.ResponseWriter, r *http.Request) {
 	platform := os.Getenv("PLATFORM")
 	if platform != "dev" {
-		respondWithError(w, http.StatusForbidden, "Forbidden")
+		RespondWithError(w, http.StatusForbidden, "Forbidden")
 		return
 	}
 	cfg.FileserverHits.Store(0)
