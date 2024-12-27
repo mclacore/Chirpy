@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/mclacore/Chirpy/internal/database"
 )
 
 var user User
@@ -16,7 +18,12 @@ func (cfg *ApiConfig) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser, createErr := cfg.Database.CreateUser(r.Context(), user.Email)
+	userParams := database.CreateUserParams{
+		Email:          user.Email,
+		HashedPassword: user.Password,
+	}
+
+	createdUser, createErr := cfg.Database.CreateUser(r.Context(), userParams)
 	if createErr != nil {
 		log.Println("Error creating user:", createErr)
 		RespondWithError(w, http.StatusInternalServerError, "Could not create user")

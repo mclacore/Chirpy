@@ -12,7 +12,7 @@ import (
 )
 
 const deleteAllChirps = `-- name: DeleteAllChirps :exec
-DELETE FROM chirps
+delete from chirps
 `
 
 func (q *Queries) DeleteAllChirps(ctx context.Context) error {
@@ -21,8 +21,9 @@ func (q *Queries) DeleteAllChirps(ctx context.Context) error {
 }
 
 const getChirp = `-- name: GetChirp :one
-SELECT id, created_at, updated_at, body, user_id FROM chirps
-WHERE id = $1
+select id, created_at, updated_at, body, user_id
+from chirps
+where id = $1
 `
 
 func (q *Queries) GetChirp(ctx context.Context, id uuid.UUID) (Chirp, error) {
@@ -39,8 +40,9 @@ func (q *Queries) GetChirp(ctx context.Context, id uuid.UUID) (Chirp, error) {
 }
 
 const getChirps = `-- name: GetChirps :many
-SELECT id, created_at, updated_at, body, user_id FROM chirps 
-ORDER BY created_at ASC
+select id, created_at, updated_at, body, user_id
+from chirps
+order by created_at asc
 `
 
 func (q *Queries) GetChirps(ctx context.Context) ([]Chirp, error) {
