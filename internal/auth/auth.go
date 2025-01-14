@@ -7,7 +7,7 @@ import (
 var Cost int
 
 func HashPassword(password string) (string, error) {
-	Cost = 12
+	Cost = 6
 
 	hash, hashErr := bcrypt.GenerateFromPassword([]byte(password), Cost)
 	if hashErr != nil {
