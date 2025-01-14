@@ -22,7 +22,7 @@ func main() {
 	}
 	dbQueries := database.New(db)
 
-	port := "8080"
+	port := "8081"
 	apiCfg := &api.ApiConfig{
 		Database: dbQueries,
 	}
